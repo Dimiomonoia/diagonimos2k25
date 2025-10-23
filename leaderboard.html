@@ -2,40 +2,17 @@
 <html lang="el">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>ClimateActionNow — Κατάταξη</title>
-  <meta name="description" content="Κατάταξη ενεργών μελών του ClimateActionNow με βάση τους πόντους.">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Κατάταξη — ClimateActionNow</title>
   <link rel="stylesheet" href="assets/css/style.css" />
-  <style>
-    /* Μικρές προσθήκες για τη σελίδα της κατάταξης */
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
-    .board-card { background:#0b1b19; border:1px solid rgba(167,243,208,.15); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
-    .board-head { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid rgba(167,243,208,.1); }
-    .board-head h1 { margin:0; font-size:22px; }
-    .muted { color:#9ad3c3; }
-    .table { width:100%; border-collapse:collapse; }
-    .table th, .table td { padding:12px 14px; border-bottom:1px solid rgba(167,243,208,.08); text-align:left; }
-    .table th { color:#a7f3d0; font-weight:700; font-size:13px; letter-spacing:.3px; text-transform:uppercase; }
-    .rank { width:46px; text-align:center; font-weight:700; }
-    .name-cell { display:flex; align-items:center; gap:10px; }
-    .avatar { width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font-weight:800; background:#113a35; color:#bff9e7; }
-    .badge-admin { display:inline-block; margin-left:8px; padding:2px 6px; border-radius:8px; font-size:11px; font-weight:700; background:linear-gradient(90deg,#fde68a,#fbbf24); color:#3b2f00; }
-    .medal { font-size:18px; display:inline-block; }
-    .gold { filter:drop-shadow(0 0 6px rgba(255,215,0,.4)); }
-    .silver { filter:drop-shadow(0 0 6px rgba(192,192,192,.35)); }
-    .bronze { filter:drop-shadow(0 0 6px rgba(205,127,50,.35)); }
-    .toolbar { display:flex; gap:10px; align-items:center; }
-    .btn { padding:8px 12px; border-radius:10px; border:1px solid rgba(167,243,208,.25); background:rgba(16,185,129,.14); color:#d8fff2; cursor:pointer; }
-    .btn.secondary { background:transparent; }
-    .empty { padding:16px; text-align:center; color:#90cfc0; }
-  </style>
 </head>
-<body id="leaderboard">
-  <!-- HEADER (ίδιο σε όλες τις σελίδες) -->
+<body>
+  <!-- Header / Nav -->
   <header class="nav">
     <div class="container nav-inner">
       <a class="brand" href="index.html">
         <span class="logo-box">
+          <!-- globe icon -->
           <svg class="logo-globe" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="9"></circle>
             <path d="M3 12h18"></path>
@@ -55,7 +32,7 @@
           <li><a href="add.html" class="navlink">Υποβολή Δράσης</a></li>
           <li><a href="rewards.html" class="navlink">Δώρα Διαγωνισμού</a></li>
           <li><a href="games.html" class="navlink">Παιχνίδια</a></li>
-          <li><a href="leaderboard.html" class="navlink">Κατάταξη</a></li>
+          <li><a href="leaderboard.html" class="navlink active">Κατάταξη</a></li>
           <li><a href="account.html" class="navlink">Ο Λογαριασμός μου</a></li>
           <li id="authArea"></li>
         </ul>
@@ -63,7 +40,7 @@
     </div>
   </header>
 
-  <!-- ΠΕΡΙΕΧΟΜΕΝΟ -->
+  <!-- Main -->
   <main class="wrap">
     <div class="board-card">
       <div class="board-head">
@@ -76,37 +53,60 @@
         </div>
       </div>
 
-      <div id="boardWrap"></div>
+      <div id="boardWrap">
+        <!-- Ο πίνακας θα γεμίσει από Firestore -->
+        <div class="empty" style="padding:16px;">Φόρτωση...</div>
+      </div>
     </div>
   </main>
 
-  <script src="assets/js/app.js"></script>
-  <script>
-    // ----- Leaderboard logic -----
-    function buildLeaderboard(){
-      const raw = localStorage.getItem('eco_users') || '{}';
-      const users = JSON.parse(raw);
-      let rows = Object.entries(users).map(([u,o])=>{
-        const pts = (o?.points||0) + (o?.volunteer ? 3 : 0);
-        const display = o?.display || u;
-        return { name: display, username: u, points: pts, isAdmin: !!o?.isAdmin };
-      });
+  <!-- Κύριο Script: Firestore ONLY (καμία χρήση localStorage) -->
+  <script type="module">
+    // Firebase SDK (ES modules)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, limit }
+      from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-      if(!rows.length){
+    // >>> ΒΑΛΕ ΕΔΩ ΤΟ ΔΙΚΟ ΣΟΥ CONFIG από το Firebase console <<<
+    const firebaseConfig = {
+      apiKey: "AIzaSyDQ3YspHTSo-MSqn8Cv3U43GvZtb-1SuaY",
+      authDomain: "diagonismos2k25.firebaseapp.com",
+     projectId: "diagonismos2k25",
+     storageBucket: "diagonismos2k25.firebasestorage.app",
+     messagingSenderId: "1095449376797",
+     appId: "1:1095449376797:web:8eea57548f9438dcee6ef4",
+     measurementId: "G-791ZTFWWJM"
+   };
+
+
+    // Init
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // Φόρτωση 20 κορυφαίων
+    async function loadLeaderboard() {
+      try {
+        const q = query(collection(db, "users"), orderBy("points", "desc"), limit(20));
+        const snap = await getDocs(q);
+        const rows = [];
+        snap.forEach(d => rows.push(d.data())); // {display, points, volunteer, isAdmin}
+
+        renderBoard(rows);
+      } catch (err) {
         document.querySelector('#boardWrap').innerHTML =
-          '<div class="empty">Δεν υπάρχουν ακόμη καταχωρήσεις.</div>';
+          `<div class="empty">Σφάλμα φόρτωσης: ${err?.message || err}</div>`;
+      }
+    }
+
+    // Απόδοση πίνακα
+    function renderBoard(rows){
+      const wrap = document.querySelector('#boardWrap');
+      if(!rows.length){
+        wrap.innerHTML = '<div class="empty">Δεν υπάρχουν ακόμη καταχωρήσεις.</div>';
         return;
       }
 
-      rows.sort((a,b)=> b.points - a.points);
-      const top = rows.slice(0, 20);
-
-      const medal = (i)=>{
-        if(i===0) return '<span class="medal gold">🥇</span>';
-        if(i===1) return '<span class="medal silver">🥈</span>';
-        if(i===2) return '<span class="medal bronze">🥉</span>';
-        return i+1;
-      };
+      const medal = (i)=> i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
 
       const html = `
         <table class="table">
@@ -114,110 +114,27 @@
             <tr><th class="rank">#</th><th>Μέλος</th><th>Πόντοι</th></tr>
           </thead>
           <tbody>
-            ${top.map((r,i)=>`
+            ${rows.map((r,i)=>`
               <tr>
                 <td class="rank">${medal(i)}</td>
                 <td class="name-cell">
-                  <span class="avatar">${(r.name||'?').slice(0,1).toUpperCase()}</span>
-                  <span>${r.name}${r.isAdmin ? ' <span class="badge-admin">Admin</span>' : ''}</span>
+                  <span class="avatar">${(r.display||'?').slice(0,1).toUpperCase()}</span>
+                  <span>${r.display || 'Χωρίς όνομα'}${r.isAdmin ? ' <span class="badge-admin">Admin</span>' : ''}</span>
                 </td>
-                <td><strong>${r.points}</strong></td>
+                <td><strong>${r.points ?? 0}</strong></td>
               </tr>
             `).join('')}
           </tbody>
-        </table>`;
-      document.querySelector('#boardWrap').innerHTML = html;
+        </table>
+      `;
+      wrap.innerHTML = html;
     }
 
-    function seedDemoData(){
-      const raw = localStorage.getItem('eco_users') || '{}';
-      const users = JSON.parse(raw);
-      users['MariaK'] = users['MariaK'] || { pass:'1234', display:'Maria K.', volunteer:true, points:74 };
-      users['NikosP'] = users['NikosP'] || { pass:'1234', display:'Nikos P.', volunteer:false, points:58 };
-      users['EcoTeamA'] = users['EcoTeamA'] || { pass:'1234', display:'Giannis K.', volunteer:true, points:121 };
-      users['GreenKids'] = users['GreenKids'] || { pass:'1234', display:'Green Kids', volunteer:false, points:96 };
-      localStorage.setItem('eco_users', JSON.stringify(users));
-      buildLeaderboard();
-    }
+    // Κουμπί ανανέωσης
+    document.querySelector('#refreshBoard')?.addEventListener('click', loadLeaderboard);
 
-    document.querySelector('#refreshBoard')?.addEventListener('click', buildLeaderboard);
-    document.querySelector('#seedDemo')?.addEventListener('click', seedDemoData);
-    buildLeaderboard();
+    // Φόρτωση κατά την είσοδο
+    loadLeaderboard();
   </script>
-  <script type="module">
-  // --- Firebase imports ---
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, query, orderBy, limit } 
-    from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-
-  // --- ΒΑΛΕ ΕΔΩ ΤΟ ΔΙΚΟ ΣΟΥ CONFIG ΑΠΟ ΤΟ FIREBASE ---
-  const firebaseConfig = {
-      apiKey: "AIzaSyDQ3YspHTSo-MSqn8Cv3U43GvZtb-1SuaY",
-      authDomain: "diagonismos2k25.firebaseapp.com",
-      projectId: "diagonismos2k25",
-      storageBucket: "diagonismos2k25.firebasestorage.app",
-      messagingSenderId: "1095449376797",
-      appId: "1:1095449376797:web:8eea57548f9438dcee6ef4",
-      measurementId: "G-791ZTFWWJM"
-      };
-
-  // --- Initialize Firebase ---
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // --- Φόρτωση leaderboard ---
-  async function loadLeaderboard(){
-    const q = query(collection(db, "users"), orderBy("points","desc"), limit(20));
-    const snap = await getDocs(q);
-    const rows = [];
-    snap.forEach(d => rows.push(d.data()));
-    renderBoard(rows);
-  }
-
-  // --- Απόδοση πίνακα ---
-  function renderBoard(rows){
-    const wrap = document.querySelector('#boardWrap');
-    if(!wrap) return;
-
-    if(!rows.length){
-      wrap.innerHTML = '<div class="empty">Δεν υπάρχουν ακόμη καταχωρήσεις.</div>';
-      return;
-    }
-
-    const medal = (i)=> i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
-
-    const html = `
-      <table class="table">
-        <thead>
-          <tr>
-            <th class="rank">#</th>
-            <th>Μέλος</th>
-            <th>Πόντοι</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map((r,i)=>`
-            <tr>
-              <td class="rank">${medal(i)}</td>
-              <td class="name-cell">
-                <span class="avatar">${(r.display||'?').slice(0,1).toUpperCase()}</span>
-                <span>${r.display||'Χωρίς όνομα'}${r.isAdmin ? ' <span class="badge-admin">Admin</span>' : ''}</span>
-              </td>
-              <td><strong>${r.points||0}</strong></td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-    wrap.innerHTML = html;
-  }
-
-  // --- Events ---
-  document.querySelector('#refreshBoard')?.addEventListener('click', loadLeaderboard);
-
-  // --- Φόρτωση κατά την είσοδο ---
-  loadLeaderboard();
-</script>
-
 </body>
 </html>
