@@ -100,3 +100,18 @@ export async function addPoints(uid, amount=5){
 // Event Listener
 // --------------------------
 document.querySelector('#authForm')?.addEventListener('submit',handleAuth);
+/**
+ * Έλεγχος αν ο τρέχων χρήστης είναι admin
+ * (διαβάζει από Firestore)
+ */
+export async function isAdminUser(uid) {
+  try {
+    const ref = doc(db, "users", uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return false;
+    return !!snap.data().isAdmin;
+  } catch (err) {
+    console.error("Σφάλμα στον έλεγχο admin:", err);
+    return false;
+  }
+}
