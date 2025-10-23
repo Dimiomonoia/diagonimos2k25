@@ -23,29 +23,33 @@ function cacheUser(u) {
   }));
 }
 
-// Δημιουργία/ενημέρωση προφίλ στο Firestore
-export async function saveUser(uid, data={}){
+// Δημιουργία/ενημέρωση προφίλ στο Firestore — ΜΟΝΟ επιτρεπόμενα πεδία
+export async function saveUser(uid, data = {}) {
   const ref = doc(db, 'users', uid);
   const snap = await getDoc(ref);
-  if(snap.exists()){
-    await updateDoc(ref, { ...data, updatedAt: serverTimestamp() });
-  }else{
-    await setDoc(ref, {
-      display: data.display || 'user',
-      points: data.points ?? 0,
-      volunteer: !!data.volunteer,
-      isAdmin: !!data.isAdmin,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-  }
-  // mapping username→uid (για αναζητήσεις με username στο μέλλον)
-  if (data.username){
-    await setDoc(doc(db,'usernames', data.username.toLowerCase()), {
-      uid, email: pseudoEmail(data.username)
-    });
+
+  const payload = {
+    display: typeof data.display === 'string'
+      ? data.display
+      : (snap.data()?.display || 'user'),
+    points: typeof data.points === 'number'
+      ? data.points
+      : (snap.data()?.points || 0),
+    volunteer: typeof data.volunteer === 'boolean'
+      ? data.volunteer
+      : (snap.data()?.volunteer || false),
+    updatedAt: serverTimestamp()
+  };
+
+  if (!snap.exists()) payload.createdAt = serverTimestamp();
+
+  if (!snap.exists()) {
+    await setDoc(ref, payload);
+  } else {
+    await updateDoc(ref, payload);
   }
 }
+
 
 // Πόντοι
 export async function addPoints(uid, amount){
@@ -82,7 +86,6 @@ regBtn?.addEventListener('click', async (e)=>{
     await saveUser(cred.user.uid, {
       username: u, display: u,
       volunteer: false,
-      isAdmin: isOlympion // ο Olympion_School admin by default
     });
     cacheUser(cred.user);
     msgEl && (msgEl.textContent = '✅ Εγγραφήκατε & συνδεθήκατε!');
