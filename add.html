@@ -82,63 +82,85 @@
   <dialog id="tipDialog"> ... </dialog>
 
   <!-- Firebase helper -->
-  <script type="module">
-    import { db } from './assets/js/fb.js';
-    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  <!-- Firebase: Λειτουργία υποβολής δράσης + πόντοι -->
+<script type="module">
+  import { db } from './assets/js/fb.js';
+  import { collection, addDoc, serverTimestamp } 
+    from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  import { addPoints } from './assets/js/auth.js';
 
-    const form = document.querySelector('#actionForm');
-    const msgEl = document.querySelector('#formMsg');
-    const prevEl = document.querySelector('#preview');
+  const form = document.querySelector('#actionForm');
+  const msgEl = document.querySelector('#formMsg');
+  const prevEl = document.querySelector('#preview');
 
-    // preview από upload
-    let uploadedDataURL = '';
-    document.querySelector('#imageUpload')?.addEventListener('change', e=>{
-      const f = e.target.files?.[0];
-      if(f && f.type.startsWith('image/')){
-        const r = new FileReader();
-        r.onload = ev => {
-          uploadedDataURL = ev.target.result;
-          if(prevEl){ prevEl.src = uploadedDataURL; prevEl.style.display = 'block'; }
-        };
-        r.readAsDataURL(f);
-      }
-    });
+  // ---- Preview εικόνας ----
+  let uploadedDataURL = '';
+  document.querySelector('#imageUpload')?.addEventListener('change', e=>{
+    const f = e.target.files?.[0];
+    if(f && f.type.startsWith('image/')){
+      const r = new FileReader();
+      r.onload = ev => {
+        uploadedDataURL = ev.target.result;
+        if(prevEl){
+          prevEl.src = uploadedDataURL;
+          prevEl.style.display = 'block';
+        }
+      };
+      r.readAsDataURL(f);
+    }
+  });
 
-    function currentDisplayName(){
-      // προσωρινός display name αν δεν έχουμε Auth
-      return localStorage.getItem('eco_session') || 'guest';
+  // ---- Όνομα χρήστη (προβολή) ----
+  function currentDisplayName(){
+    const data = JSON.parse(localStorage.getItem("eco_user"));
+    return data?.display || "guest";
+  }
+
+  // ---- Υποβολή δράσης ----
+  form?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+
+    const title = document.querySelector('#title').value.trim();
+    const category = document.querySelector('#category').value;
+    const link = document.querySelector('#link').value.trim();
+    const desc = document.querySelector('#desc').value.trim();
+    const image = uploadedDataURL || document.querySelector('#image')?.value.trim() || '';
+
+    if(!title || !category || !desc){
+      msgEl.textContent = '⚠️ Συμπλήρωσε τίτλο, κατηγορία και περιγραφή.';
+      return;
     }
 
-    form?.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const title = document.querySelector('#title').value.trim();
-      const category = document.querySelector('#category').value;
-      const link = document.querySelector('#link').value.trim();
-      const desc = document.querySelector('#desc').value.trim();
-      const image = uploadedDataURL || document.querySelector('#image')?.value.trim() || '';
+    try{
+      // Αποθήκευση δράσης
+      await addDoc(collection(db, 'actions'), {
+        title, category, link, desc, image,
+        ownerName: currentDisplayName(),
+        created: serverTimestamp()
+      });
 
-      if(!title || !category || !desc){
-        msgEl.textContent = 'Συμπλήρωσε τίτλο, κατηγορία και περιγραφή.';
-        return;
+      // ➕ Προσθήκη πόντων στο συνδεδεμένο χρήστη
+      const userData = JSON.parse(localStorage.getItem("eco_user"));
+      if (userData) {
+        await addPoints(userData.uid, 5); // +5 πόντοι
+        console.log("✅ Προστέθηκαν +5 πόντοι στον χρήστη:", userData.display);
+      } else {
+        console.log("Δεν είσαι συνδεδεμένος — δεν απονεμήθηκαν πόντοι.");
       }
 
-      try{
-        await addDoc(collection(db, 'actions'), {
-          title, category, link, desc, image,
-          ownerName: currentDisplayName(),
-          created: serverTimestamp()
-        });
-        msgEl.textContent = '✅ Η δράση αποθηκεύτηκε!';
-        form.reset();
-        if(prevEl) prevEl.style.display = 'none';
-        uploadedDataURL = '';
-      } catch(err){
-        msgEl.textContent = 'Σφάλμα: ' + (err?.message || err);
-      }
-    });
-  </script>
+      msgEl.textContent = '✅ Η δράση αποθηκεύτηκε με επιτυχία!';
+      form.reset();
+      if(prevEl) prevEl.style.display = 'none';
+      uploadedDataURL = '';
+    } catch(err){
+      msgEl.textContent = '❌ Σφάλμα: ' + (err?.message || err);
+    }
+  });
+</script>
+
 
   <!-- keep app.js for other UI bits (nav, auth dialog rendering etc.) -->
   <script src="assets/js/app.js"></script>
+  
 </body>
 </html>
