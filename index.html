@@ -105,6 +105,31 @@
     </div>
   </dialog>
 
+  <!-- κάπου στο index.html (ή global) -->
+  <dialog id="authDialog">
+   <form method="dialog" class="p">
+     <h3>Είσοδος / Εγγραφή</h3>
+     <div class="field">
+       <label>Username</label>
+       <input id="regUser" type="text" placeholder="π.χ. Olympion_School" />
+     </div>
+     <div class="field">
+       <label>Κωδικός</label>
+       <input id="regPass" type="password" placeholder="••••••••" />
+     </div>
+     <div id="authMsg" class="muted"></div>
+     <div class="row" style="gap:10px;margin-top:12px">
+       <button id="loginBtn" class="btn">Είσοδος</button>
+       <button id="registerBtn" class="btn secondary">Εγγραφή</button>
+       <button class="btn ghost" onclick="document.querySelector('#authDialog').close()">Κλείσιμο</button>
+     </div>
+   </form>
+  </dialog>
+
+<!-- στο header υπάρχει ένα κενό container -->
+<li id="authArea"></li>
+  <script type="module" src="assets/js/fb.js"></script>
+  <script type="module" src="assets/js/auth.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>

@@ -1,13 +1,9 @@
-// ==============================
-// Firebase Configuration (Olympion ClimateActionNow)
-// ==============================
-
-// Φόρτωση Firebase modules (ESM)
+// assets/js/fb.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-// --- Το δικό σου config ---
-export const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyDQ3YspHTSo-MSqn8Cv3U43GvZtb-1SuaY",
   authDomain: "diagonismos2k25.firebaseapp.com",
   projectId: "diagonismos2k25",
@@ -17,6 +13,6 @@ export const firebaseConfig = {
   measurementId: "G-791ZTFWWJM"
 };
 
-// --- Ενεργοποίηση Firebase & Firestore ---
 export const app = initializeApp(firebaseConfig);
-export const db  = getFirestore(app);
+export const auth = getAuth(app);
+export const db = getFirestore(app);

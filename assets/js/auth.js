@@ -1,117 +1,162 @@
-// ==============================
-// Firebase Auth + Firestore User Points System
-// ==============================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-         createUserWithEmailAndPassword, signOut, updateProfile } 
-  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, increment } 
-  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+// assets/js/auth.js
+import { auth, db } from './fb.js';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  doc, getDoc, setDoc, updateDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-import { firebaseConfig } from "./fb.js";
+// ---- helpers ----
+const pseudoEmail = (username) =>
+  `${username.toLowerCase().replace(/[^a-z0-9]+/g,'-')}@can.local`;
 
-// Initialize
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Ελάχιστη αποθήκευση του τρέχοντα χρήστη για το UI
+function cacheUser(u) {
+  if(!u){ localStorage.removeItem('eco_user'); return; }
+  localStorage.setItem('eco_user', JSON.stringify({
+    uid: u.uid, display: u.displayName || u.email?.split('@')[0]
+  }));
+}
 
-const authArea = document.querySelector('#authArea');
-const dialog = document.querySelector('#authDialog');
-
-// --------------------------
-// Ενημέρωση UI
-// --------------------------
-function updateAuthUI(user){
-  if(!authArea) return;
-  if(user){
-    authArea.innerHTML = `
-      <span class="muted">👋 ${user.displayName || user.email}</span>
-      <button id="logoutBtn" class="btn secondary">Αποσύνδεση</button>`;
-    document.querySelector('#logoutBtn').addEventListener('click', ()=>signOut(auth));
+// Δημιουργία/ενημέρωση προφίλ στο Firestore
+export async function saveUser(uid, data={}){
+  const ref = doc(db, 'users', uid);
+  const snap = await getDoc(ref);
+  if(snap.exists()){
+    await updateDoc(ref, { ...data, updatedAt: serverTimestamp() });
   }else{
-    authArea.innerHTML = `<button id="loginBtn" class="btn">Σύνδεση</button>`;
-    document.querySelector('#loginBtn').addEventListener('click', ()=>dialog?.showModal());
+    await setDoc(ref, {
+      display: data.display || 'user',
+      points: data.points ?? 0,
+      volunteer: !!data.volunteer,
+      isAdmin: !!data.isAdmin,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  }
+  // mapping username→uid (για αναζητήσεις με username στο μέλλον)
+  if (data.username){
+    await setDoc(doc(db,'usernames', data.username.toLowerCase()), {
+      uid, email: pseudoEmail(data.username)
+    });
   }
 }
 
-// --------------------------
-// Δημιουργία ή Σύνδεση
-// --------------------------
-async function handleAuth(e){
+// Πόντοι
+export async function addPoints(uid, amount){
+  const ref = doc(db,'users', uid);
+  const snap = await getDoc(ref);
+  const curr = snap.exists() ? (snap.data().points||0) : 0;
+  await saveUser(uid, { points: curr + amount });
+}
+
+// Έλεγχος admin
+export async function isAdminUser(uid){
+  const ref = doc(db,'users', uid);
+  const snap = await getDoc(ref);
+  return snap.exists() ? !!snap.data().isAdmin : false;
+}
+
+// ---- UI wiring (κουμπιά) ----
+const regBtn = document.querySelector('#registerBtn');
+const logBtn = document.querySelector('#loginBtn');
+const logoutBtn = document.querySelector('#logoutBtn');
+const msgEl = document.querySelector('#authMsg');
+
+regBtn?.addEventListener('click', async (e)=>{
   e.preventDefault();
-  const email = document.querySelector('#authEmail').value.trim();
-  const pass = document.querySelector('#authPass').value.trim();
-  const name = document.querySelector('#authName').value.trim();
-  const isSignup = document.querySelector('#authMode').value === 'signup';
-
+  const u = document.querySelector('#regUser')?.value.trim();
+  const p = document.querySelector('#regPass')?.value.trim();
+  if(!u || !p){ msgEl && (msgEl.textContent = 'Συμπλήρωσε username & κωδικό.'); return; }
   try{
-    let userCred;
-    if(isSignup){
-      userCred = await createUserWithEmailAndPassword(auth,email,pass);
-      await updateProfile(userCred.user,{ displayName:name });
-
-      // --- Δημιουργία εγγραφής Firestore ---
-      await setDoc(doc(db,"users",userCred.user.uid),{
-        display: name,
-        email: email,
-        points: 0,
-        volunteer: false
-      });
-    }else{
-      userCred = await signInWithEmailAndPassword(auth,email,pass);
-    }
-
-    dialog.close();
+    const email = pseudoEmail(u);
+    const cred = await createUserWithEmailAndPassword(auth, email, p);
+    await updateProfile(cred.user, { displayName: u });
+    // Αν είναι ο επίσημος λογαριασμός, κάνε τον admin (1η φορά)
+    const isOlympion = (u === 'Olympion_School');
+    await saveUser(cred.user.uid, {
+      username: u, display: u,
+      volunteer: false,
+      isAdmin: isOlympion // ο Olympion_School admin by default
+    });
+    cacheUser(cred.user);
+    msgEl && (msgEl.textContent = '✅ Εγγραφήκατε & συνδεθήκατε!');
+    document.querySelector('#authDialog')?.close();
+    renderAuthArea();
   }catch(err){
-    alert("Σφάλμα: " + err.message);
-  }
-}
-
-// --------------------------
-// Ανίχνευση κατάστασης σύνδεσης
-// --------------------------
-onAuthStateChanged(auth,async user=>{
-  updateAuthUI(user);
-  if(user){
-    const snap = await getDoc(doc(db,"users",user.uid));
-    if(snap.exists()){
-      const data = snap.data();
-      localStorage.setItem("eco_user", JSON.stringify({
-        uid: user.uid,
-        display: data.display,
-        points: data.points || 0
-      }));
-    }
-  }else{
-    localStorage.removeItem("eco_user");
+    msgEl && (msgEl.textContent = 'Σφάλμα: '+err.message);
   }
 });
 
-// --------------------------
-// Προσθήκη πόντων (π.χ. όταν κάνει δράση)
-// --------------------------
-export async function addPoints(uid, amount=5){
-  if(!uid) return;
-  const ref = doc(db,"users",uid);
-  await updateDoc(ref,{ points: increment(amount) });
-}
-
-// --------------------------
-// Event Listener
-// --------------------------
-document.querySelector('#authForm')?.addEventListener('submit',handleAuth);
-/**
- * Έλεγχος αν ο τρέχων χρήστης είναι admin
- * (διαβάζει από Firestore)
- */
-export async function isAdminUser(uid) {
-  try {
-    const ref = doc(db, "users", uid);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return false;
-    return !!snap.data().isAdmin;
-  } catch (err) {
-    console.error("Σφάλμα στον έλεγχο admin:", err);
-    return false;
+logBtn?.addEventListener('click', async (e)=>{
+  e.preventDefault();
+  const u = document.querySelector('#regUser')?.value.trim();
+  const p = document.querySelector('#regPass')?.value.trim();
+  if(!u || !p){ msgEl && (msgEl.textContent = 'Συμπλήρωσε username & κωδικό.'); return; }
+  try{
+    const email = u.includes('@') ? u : pseudoEmail(u);
+    const cred = await signInWithEmailAndPassword(auth, email, p);
+    cacheUser(cred.user);
+    msgEl && (msgEl.textContent = `✅ Καλωσήρθες, ${cred.user.displayName||u}!`);
+    document.querySelector('#authDialog')?.close();
+    renderAuthArea();
+  }catch(err){
+    msgEl && (msgEl.textContent = 'Σφάλμα: '+err.message);
   }
+});
+
+logoutBtn?.addEventListener('click', async()=>{
+  await signOut(auth);
+  cacheUser(null);
+  renderAuthArea();
+  location.reload();
+});
+
+// Παρακολούθηση session
+onAuthStateChanged(auth, async (user)=>{
+  cacheUser(user || null);
+  renderAuthArea();
+});
+
+// ---- Header chip (δεξιά) ----
+export async function renderAuthArea(){
+  const host = document.querySelector('#authArea'); if(!host) return;
+  const user = auth.currentUser;
+
+  if(!user){
+    host.innerHTML = `<button class="btn ghost" id="authBtn">Είσοδος / Εγγραφή</button>`;
+    document.querySelector('#authBtn')?.addEventListener('click',()=> {
+      document.querySelector('#authDialog')?.showModal();
+    });
+    return;
+  }
+  const snap = await getDoc(doc(db,'users', user.uid));
+  const pts = snap.exists() ? (snap.data().points||0) : 0;
+  const letter = (user.displayName||'?').slice(0,1).toUpperCase();
+
+  host.innerHTML = `
+    <div class="userchip" id="userChip" tabindex="0" aria-haspopup="true">
+      <div class="avatar">${letter}</div>
+      <span class="name">${user.displayName||user.email}</span>
+      <span class="points">★ ${pts}</span>
+    </div>
+    <div class="usermenu" id="userMenu" hidden>
+      <a href="account.html">Ο λογαριασμός μου</a>
+      <a href="add.html">Υποβολή δράσης</a>
+      <a href="leaderboard.html">Κατάταξη</a>
+      <button id="logoutBtn2" class="menu-danger">Αποσύνδεση</button>
+    </div>`;
+  const chip = document.querySelector('#userChip');
+  const menu = document.querySelector('#userMenu');
+  chip?.addEventListener('click', ()=> menu.hidden = !menu.hidden);
+  chip?.addEventListener('blur', ()=> setTimeout(()=> menu.hidden=true, 150));
+  document.querySelector('#logoutBtn2')?.addEventListener('click', async ()=>{
+    await signOut(auth); cacheUser(null); renderAuthArea(); location.reload();
+  });
 }
+renderAuthArea();
