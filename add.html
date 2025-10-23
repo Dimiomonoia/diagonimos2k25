@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EcoAction Hub — Υποβολή Δράσης</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <meta name="description" content="Δράση για το κλίμα: ιδέες, υποβολές, βαθμολογίες, παιχνίδια, δώρα. Πρωτότυπο με τοπική αποθήκευση.">
+</head>
+<body id="add">
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <span>EcoAction Hub</span>
+      </div>
+      <nav style="margin-left:auto">
+        <ul>
+          <li><a href="index.html" class="navlink">Αρχική</a></li>
+          <li><a href="ways.html" class="navlink">Ιδέες Δράσης</a></li>
+          <li><a href="add.html" class="navlink">Υποβολή Δράσης</a></li>
+          <li><a href="rewards.html" class="navlink">Δώρα Διαγωνισμού</a></li>
+          <li><a href="games.html" class="navlink">Παιχνίδια</a></li>
+          <li><a href="account.html" class="navlink">Ο Λογαριασμός μου</a></li>
+          <li id="authArea"></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+  
+<section class="page">
+  <h2>Υπόβαλε τη δική σου δράση</h2>
+  <p class="muted">Απαιτείται σύνδεση. Οι δράσεις εμφανίζονται δημόσια και μπορούν να βαθμολογηθούν από χρήστες με λογαριασμό.</p>
+  <form id="actionForm" class="card p" style="padding:16px">
+    <div class="row">
+      <div><label for="title">Τίτλος δράσης</label><input id="title" required placeholder="Π.χ. Δενδροφύτευση στη γειτονιά"/></div>
+      <div><label for="category">Κατηγορία</label>
+        <select id="category">
+          <option>Ενέργεια</option><option>Μετακίνηση</option><option>Ανακύκλωση</option>
+          <option>Νερό</option><option>Σχολείο</option><option>Κοινότητα</option>
+        </select>
+      </div>
+    </div>
+<label>Εικόνα Δράσης</label>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+  <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/jpg"/>
+  <input id="image" placeholder="Ή επικόλλησε URL εικόνας (https://...)" style="flex:1"/>
+</div>
+<img id="preview" alt="Προεπισκόπηση" style="margin-top:10px;max-width:240px;display:none;border-radius:10px;border:1px solid #134"/>
+    <label for="link">Σύνδεσμος/περισσότερα</label><input id="link" placeholder="https://..."/>
+    <label for="desc">Περιγραφή</label><textarea id="desc" rows="4" placeholder="Τι κάνατε, πού, πότε, υλικά, ομάδα, επίδραση..."></textarea>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+      <button class="btn" type="submit">Αποθήκευση δράσης</button><span class="muted" id="formMsg"></span>
+    </div>
+  </form>
+  <h3 style="margin-top:24px">Δημόσιες δράσεις</h3>
+  <div class="grid cards" id="actionsList"></div>
+</section>
+
+  </main>
+  <footer class="container">
+    Η Γη δεν χρειάζεται σωτήρες, χρειάζεται συμμάχους.
+  </footer>
+
+  <!-- Modals -->
+  <dialog id="authDialog">
+    <form method="dialog" id="authForms" style="padding:18px;min-width:320px">
+      <h3 style="margin-bottom:8px">Είσοδος / Εγγραφή</h3>
+      <p class="muted" style="margin-top:0">(Πρωτότυπο: οι λογαριασμοί αποθηκεύονται μόνο στη συσκευή σου.)</p>
+      <div class="row">
+        <div><label>Όνομα χρήστη</label><input id="regUser" placeholder="π.χ. eco-student"/></div>
+        <div><label>Κωδικός</label><input id="regPass" type="password"/></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="btn" id="registerBtn">Εγγραφή</button>
+        <button class="btn secondary" id="loginBtn">Είσοδος</button>
+        <button class="btn ghost" value="cancel">Κλείσιμο</button>
+      </div>
+      <div id="authMsg" class="muted" style="margin-top:8px"></div>
+    </form>
+  </dialog>
+
+  <dialog id="tipDialog">
+    <div class="p" style="padding:18px">
+      <h3 id="tipTitle">Συνήθεια</h3>
+      <p id="tipBody" class="muted">Περιγραφή</p>
+      <div style="display:flex;justify-content:flex-end"><button class="btn" id="tipClose">ΟΚ</button></div>
+    </div>
+  </dialog>
+
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

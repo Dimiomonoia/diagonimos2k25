@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EcoAction Hub — Λογαριασμός</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <meta name="description" content="Δράση για το κλίμα: ιδέες, υποβολές, βαθμολογίες, παιχνίδια, δώρα. Πρωτότυπο με τοπική αποθήκευση.">
+</head>
+<body id="account">
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <span>EcoAction Hub</span>
+      </div>
+      <nav style="margin-left:auto">
+        <ul>
+          <li><a href="index.html" class="navlink">Αρχική</a></li>
+          <li><a href="ways.html" class="navlink">Ιδέες Δράσης</a></li>
+          <li><a href="add.html" class="navlink">Υποβολή Δράσης</a></li>
+          <li><a href="rewards.html" class="navlink">Δώρα Διαγωνισμού</a></li>
+          <li><a href="games.html" class="navlink">Παιχνίδια</a></li>
+          <li><a href="account.html" class="navlink">Ο Λογαριασμός μου</a></li>
+          <li id="authArea"></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+  
+<section class="page">
+  <h2>Ο Λογαριασμός μου</h2>
+  <div class="card"><div class="p">
+    <p class="muted">Αν έχεις λογαριασμό, μπορείς να δηλώσεις <strong>Εθελοντής/ντρια</strong> για δράσεις για το κλίμα.</p>
+    <div id="accountPanel"></div>
+  </div></div>
+</section>
+
+  </main>
+  <footer class="container">
+    Η Γη δεν χρειάζεται σωτήρες, χρειάζεται συμμάχους.
+  </footer>
+
+  <!-- Modals -->
+  <dialog id="authDialog">
+    <form method="dialog" id="authForms" style="padding:18px;min-width:320px">
+      <h3 style="margin-bottom:8px">Είσοδος / Εγγραφή</h3>
+      <p class="muted" style="margin-top:0">(Πρωτότυπο: οι λογαριασμοί αποθηκεύονται μόνο στη συσκευή σου.)</p>
+      <div class="row">
+        <div><label>Όνομα χρήστη</label><input id="regUser" placeholder="π.χ. eco-student"/></div>
+        <div><label>Κωδικός</label><input id="regPass" type="password"/></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="btn" id="registerBtn">Εγγραφή</button>
+        <button class="btn secondary" id="loginBtn">Είσοδος</button>
+        <button class="btn ghost" value="cancel">Κλείσιμο</button>
+      </div>
+      <div id="authMsg" class="muted" style="margin-top:8px"></div>
+    </form>
+  </dialog>
+
+  <dialog id="tipDialog">
+    <div class="p" style="padding:18px">
+      <h3 id="tipTitle">Συνήθεια</h3>
+      <p id="tipBody" class="muted">Περιγραφή</p>
+      <div style="display:flex;justify-content:flex-end"><button class="btn" id="tipClose">ΟΚ</button></div>
+    </div>
+  </dialog>
+
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

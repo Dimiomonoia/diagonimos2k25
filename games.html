@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EcoAction Hub — Παιχνίδια</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body id="games">
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <span>EcoAction Hub</span>
+      </div>
+      <nav style="margin-left:auto">
+        <ul>
+          <li><a href="index.html" class="navlink">Αρχική</a></li>
+          <li><a href="ways.html" class="navlink">Ιδέες Δράσης</a></li>
+          <li><a href="add.html" class="navlink">Υποβολή Δράσης</a></li>
+          <li><a href="rewards.html" class="navlink">Δώρα Διαγωνισμού</a></li>
+          <li><a href="games.html" class="navlink">Παιχνίδια</a></li>
+          <li><a href="account.html" class="navlink">Ο Λογαριασμός μου</a></li>
+          <li id="authArea"></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="page">
+      <h2>Εκπαιδευτικό Παιχνίδι — Ερωτήσεις με θέμα το Περιβάλον</h2>
+      <div class="card"><div class="p">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <div id="qProgress" class="badge">0 / 0</div>
+          <button class="btn secondary" id="restartQuiz" title="Νέα τυχαία σειρά">Επανεκκίνηση</button>
+        </div>
+        <div id="qText" style="margin:12px 0;font-weight:600"></div>
+        <form id="qForm"></form>
+        <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+          <button class="btn" id="submitOne">Υποβολή</button>
+          <button class="btn secondary" id="nextOne" disabled>Επόμενη</button>
+          <span id="qFeedback" class="muted"></span>
+        </div>
+      </div></div>
+    </section>
+  </main>
+
+  <footer class="container">
+    Φτιαγμένο με ❤ — Βασισμένο στις ερωτήσεις του Word, τυχαία σειρά, άμεση ανατροφοδότηση.
+  </footer>
+
+  <dialog id="authDialog">
+    <form method="dialog" id="authForms" style="padding:18px;min-width:320px">
+      <h3 style="margin-bottom:8px">Είσοδος / Εγγραφή</h3>
+      <p class="muted" style="margin-top:0">(Πρωτότυπο: οι λογαριασμοί αποθηκεύονται μόνο στη συσκευή σου.)</p>
+      <div class="row">
+        <div><label>Όνομα χρήστη</label><input id="regUser" placeholder="π.χ. eco-student"/></div>
+        <div><label>Κωδικός</label><input id="regPass" type="password"/></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="btn" id="registerBtn">Εγγραφή</button>
+        <button class="btn secondary" id="loginBtn">Είσοδος</button>
+        <button class="btn ghost" value="cancel">Κλείσιμο</button>
+      </div>
+      <div id="authMsg" class="muted" style="margin-top:8px"></div>
+    </form>
+  </dialog>
+
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

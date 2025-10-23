@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EcoAction Hub — Αρχική</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <meta name="description" content="Δράση για το κλίμα: ιδέες, υποβολές, βαθμολογίες, παιχνίδια, δώρα. Πρωτότυπο με τοπική αποθήκευση.">
+</head>
+<body id="home">
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <span>EcoAction Hub</span>
+      </div>
+      <nav style="margin-left:auto">
+        <ul>
+          <li><a href="index.html" class="navlink">Αρχική</a></li>
+          <li><a href="ways.html" class="navlink">Ιδέες Δράσης</a></li>
+          <li><a href="add.html" class="navlink">Υποβολή Δράσης</a></li>
+          <li><a href="rewards.html" class="navlink">Δώρα Διαγωνισμού</a></li>
+          <li><a href="games.html" class="navlink">Παιχνίδια</a></li>
+          <li><a href="account.html" class="navlink">Ο Λογαριασμός μου</a></li>
+          <li id="authArea"></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+  
+<section class="page">
+  <div class="hero">
+    <div>
+      <span class="badge">• Δράση για το Κλίμα •</span>
+      <h1>Κάθε μικρή πράξη μετράει. <span class="c1">Συνδέσου</span>, <span class="c2">μοιράσου</span>, <span class="c3">βαθμολόγησε</span>.</h1>
+      <p class="muted">Υπόβαλε τη δική σου περιβαλλοντική δράση, πάρε ιδέες από άλλους/ες, ψήφισε τις καλύτερες και κέρδισε δώρα. Δήλωσε εθελοντής/ντρια!</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn" href="add.html">Υποβολή τώρα</a>
+        <a class="btn secondary" href="ways.html">Δες ιδέες</a>
+      </div>
+      <div style="margin-top:16px" class="muted">* Πρωτότυπο χωρίς backend (τοπική αποθήκευση).</div>
+    </div>
+    <div class="globe" aria-hidden="true"></div>
+  </div>
+
+  <div class="slider" id="slider">
+    <div class="slide active" data-link="ways.html" style="background:url('https://images.unsplash.com/photo-1509099836639-18ba1795216d?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat">
+      <div class="inside"><div><h3>10 απλοί τρόποι να μειώσεις το αποτύπωμά σου</h3><p class="muted">Μετακίνηση, ενέργεια, διατροφή, νερό – ιδέες για σχολείο & σπίτι.</p><a class="btn go" href="ways.html">Μετάβαση</a></div></div>
+    </div>
+    <div class="slide" data-link="add.html" style="background:url('https://images.unsplash.com/photo-1466611653911-95081537e5b7?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat">
+      <div class="inside"><div><h3>Υπόβαλε τη δράση της ομάδας σου</h3><p class="muted">Φωτο, περιγραφή & σύνδεσμος. Οι επισκέπτες βαθμολογούν.</p><a class="btn go" href="add.html">Υποβολή</a></div></div>
+    </div>
+    <div class="slide" data-link="rewards.html" style="background:url('https://images.unsplash.com/photo-1515168833906-d2a3b82b302a?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat">
+      <div class="inside"><div><h3>Δώρα Διαγωνισμού</h3><p class="muted">Μάζεψε πόντους από συμμετοχή & ψήφους.</p><a class="btn go" href="rewards.html">Δες τα δώρα</a></div></div>
+    </div>
+    <div class="controls"><button id="prev">◀</button><button id="next">▶</button></div>
+  </div>
+
+  <h2 style="margin:24px 0 10px">Κακές συνήθειες & αντιμετώπιση</h2>
+  <p class="muted">Πάτησε σε μια κάρτα για συμβουλές.</p>
+  <div class="bad-grid" id="badGrid"></div>
+</section>
+
+  </main>
+  <footer class="container">
+    Η Γη δεν χρειάζεται σωτήρες, χρειάζεται συμμάχους.
+  </footer>
+
+  <!-- Modals -->
+  <dialog id="authDialog">
+    <form method="dialog" id="authForms" style="padding:18px;min-width:320px">
+      <h3 style="margin-bottom:8px">Είσοδος / Εγγραφή</h3>
+      <p class="muted" style="margin-top:0">(Πρωτότυπο: οι λογαριασμοί αποθηκεύονται μόνο στη συσκευή σου.)</p>
+      <div class="row">
+        <div><label>Όνομα χρήστη</label><input id="regUser" placeholder="π.χ. eco-student"/></div>
+        <div><label>Κωδικός</label><input id="regPass" type="password"/></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="btn" id="registerBtn">Εγγραφή</button>
+        <button class="btn secondary" id="loginBtn">Είσοδος</button>
+        <button class="btn ghost" value="cancel">Κλείσιμο</button>
+      </div>
+      <div id="authMsg" class="muted" style="margin-top:8px"></div>
+    </form>
+  </dialog>
+
+  <dialog id="tipDialog">
+    <div class="p" style="padding:18px">
+      <h3 id="tipTitle">Συνήθεια</h3>
+      <p id="tipBody" class="muted">Περιγραφή</p>
+      <div style="display:flex;justify-content:flex-end"><button class="btn" id="tipClose">ΟΚ</button></div>
+    </div>
+  </dialog>
+
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
