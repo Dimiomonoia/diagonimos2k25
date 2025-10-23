@@ -138,3 +138,54 @@
   </script>
 </body>
 </html>
+<body id="leaderboard-page">
+  <link rel="stylesheet" href="assets/css/style.css" />
+<style>
+  /* ΟΛΑ αυτά ισχύουν μόνο μέσα στη σελίδα κατάταξης */
+  #leaderboard-page .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+  #leaderboard-page .board-card {
+    background:#0b1b19;
+    border:1px solid rgba(167,243,208,.15);
+    border-radius:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  #leaderboard-page .board-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 18px; border-bottom:1px solid rgba(167,243,208,.1);
+  }
+  #leaderboard-page .board-head h1 { margin:0; font-size:28px; }
+  #leaderboard-page .muted { color:#9ad3c3; }
+
+  #leaderboard-page .toolbar .btn{
+    padding:8px 12px; border-radius:10px;
+    border:1px solid rgba(167,243,208,.25);
+    background:rgba(16,185,129,.14); color:#d8fff2; cursor:pointer;
+  }
+
+  /* Πίνακας */
+  #leaderboard-page .table { width:100%; border-collapse:collapse; }
+  #leaderboard-page .table th, 
+  #leaderboard-page .table td {
+    padding:12px 14px; border-bottom:1px solid rgba(167,243,208,.08); text-align:left;
+  }
+  #leaderboard-page .table th {
+    color:#a7f3d0; font-weight:700; font-size:13px; letter-spacing:.3px; text-transform:uppercase;
+  }
+  #leaderboard-page .rank { width:46px; text-align:center; font-weight:700; }
+  #leaderboard-page .name-cell { display:flex; align-items:center; gap:10px; }
+  #leaderboard-page .avatar {
+    width:28px; height:28px; border-radius:50%;
+    display:grid; place-items:center; font-weight:800;
+    background:#113a35; color:#bff9e7;
+  }
+
+  /* Σήμανση Admin */
+  #leaderboard-page .badge-admin{
+    display:inline-block; margin-left:8px; padding:2px 6px; border-radius:8px;
+    font-size:11px; font-weight:700; background:linear-gradient(90deg,#fde68a,#fbbf24); color:#3b2f00;
+  }
+
+  /* Άδειο state */
+  #leaderboard-page .empty { padding:16px; color:#90cfc0; }
+</style>
