@@ -206,7 +206,7 @@ function drawAccountPanel(){
       <section class="card">
         <div class="p">
           <h3>Ασφάλεια</h3>
-          <p class="muted">Πρωτότυπο: τα δεδομένα αποθηκεύονται μόνο στη συσκευή σου (localStorage).</p>
+          <p class="muted">🌿 Θυμήσου να αποσυνδέεσαι — η ασφάλεια ξεκινά από σένα!</p>
           <button class="btn secondary" onclick="logout()">Αποσύνδεση</button>
         </div>
       </section>
@@ -392,7 +392,7 @@ function drawActions(){
   const actions = store.get(LS_ACTIONS, []);
   const dataset = (actions.length? actions: [
     {id:'seed1', owner:'demo', title:'Δενδροφύτευση στο πάρκο', category:'Κοινότητα', image:'https://images.unsplash.com/photo-1606117331085-5760e3b58520?q=80&w=1400&auto=format&fit=crop', link:'#', desc:'30 δεντράκια με τη Β΄Γυμνασίου', created:Date.now(), avg:4.2, votes:18},
-    {id:'seed2', owner:'demo', title:'Συλλογή καπακιών', category:'Σχολείο', image:'https://images.unsplash.com/photo-1556911220-e15b29be8c25?q=80&w=1400&auto=format&fit=crop', link:'#', desc:'Για ανακύκλωση & κοινωνική προσφορά', created:Date.now(), avg:3.8, votes:25}
+    {id:'seed2', owner:'demo', title:'Συλλογή καπακιών', category:'Σχολείο', image:'https://source.unsplash.com/Qtj5RYq10vA/1400x933', link:'#', desc:'Για ανακύκλωση & κοινωνική προσφορά', created:Date.now(), avg:3.8, votes:25}
   ]);
   list.innerHTML = dataset.map(a=>actionCard(a)).join('');
 }
@@ -526,7 +526,7 @@ if(badGrid){
 })();
 
 // =======================
-// QUIZ: μία-μία ερώτηση, τυχαία σειρά, άμεση ανατροφοδότηση
+// QUIZ: μία-μία ερώτηση, τυχαία σειρά, τυχαίες θέσεις απαντήσεων
 // =======================
 const questionBank = [
   {q:'Τι προκαλεί την αύξηση της θερμοκρασίας του πλανήτη;', a:['Η περιστροφή της Γης','Οι εκρήξεις ηφαιστείων','Οι ανθρώπινες δραστηριότητες που παράγουν αέρια του θερμοκηπίου','Η βαρύτητα της Σελήνης'], c:2},
@@ -540,29 +540,52 @@ const questionBank = [
 ];
 
 (function perQuestionQuiz(){
-  const qText = document.querySelector('#qText');
-  const qForm = document.querySelector('#qForm');
+  const qText     = document.querySelector('#qText');
+  const qForm     = document.querySelector('#qForm');
   const submitBtn = document.querySelector('#submitOne');
-  const nextBtn = document.querySelector('#nextOne');
-  const feedback = document.querySelector('#qFeedback');
-  const progress = document.querySelector('#qProgress');
-  const restart = document.querySelector('#restartQuiz');
+  const nextBtn   = document.querySelector('#nextOne');
+  const feedback  = document.querySelector('#qFeedback');
+  const progress  = document.querySelector('#qProgress');
+  const restart   = document.querySelector('#restartQuiz');
   if(!qText || !qForm) return; // τρέχει μόνο στη σελίδα games.html
 
-  function shuffled(n){
-    const arr = Array.from({length:n},(_,i)=>i);
-    for(let i=n-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  // Fisher–Yates
+  function shuffleArray(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
     return arr;
   }
+  function shuffled(n){ return shuffleArray(Array.from({length:n},(_,i)=>i)); }
 
-  let order = shuffled(questionBank.length);
+  let order = shuffled(questionBank.length); // τυχαία σειρά ερωτήσεων
   let step = 0;
-  function drawProgress(){ progress.textContent = `${step+1} / ${order.length}`; }
+  // θα κρατάμε για ΚΑΘΕ ερώτηση τη σειρά των επιλογών της
+  let optionOrderPerStep = [];
+
+  function drawProgress(){
+    progress.textContent = `${step+1} / ${order.length}`;
+  }
 
   function renderQuestion(){
     const q = questionBank[order[step]];
     qText.textContent = `${step+1}. ${q.q}`;
-    qForm.innerHTML = q.a.map((opt,idx)=>`<label style="display:block;margin:6px 0"><input type="radio" name="opt" value="${idx}"> ${String.fromCharCode(65+idx)}. ${opt}</label>`).join('');
+
+    // αν δεν έχουμε ήδη τυχαία σειρά για αυτή την ερώτηση, φτιάξε τώρα
+    if(!optionOrderPerStep[step]){
+      optionOrderPerStep[step] = shuffled(q.a.length);
+    }
+    const perm = optionOrderPerStep[step];
+
+    // εμφανίζουμε τις επιλογές με βάση το perm
+    qForm.innerHTML = perm.map((origIdx,shownIdx)=>`
+      <label style="display:block;margin:6px 0">
+        <input type="radio" name="opt" value="${origIdx}">
+        ${String.fromCharCode(65+shownIdx)}. ${q.a[origIdx]}
+      </label>
+    `).join('');
+
     feedback.textContent = '';
     submitBtn.disabled = false;
     nextBtn.disabled = true;
@@ -572,10 +595,14 @@ const questionBank = [
   function submitCurrent(){
     const sel = qForm.querySelector('input[name="opt"]:checked');
     if(!sel){ feedback.textContent = 'Επίλεξε μια απάντηση.'; return; }
-    const val = Number(sel.value);
+    const chosenOrigIndex = Number(sel.value);    // είναι το "original" index
     const q = questionBank[order[step]];
-    const isCorrect = val === q.c;
-    feedback.textContent = isCorrect ? '✅ Σωστό!' : `❌ Λάθος. Σωστό: ${String.fromCharCode(65+q.c)}.`;
+    const isCorrect = chosenOrigIndex === q.c;
+    // βρες σε ποια θέση (A/B/C/D) βρίσκεται τώρα το σωστό μετά το perm
+    const correctShownPos = optionOrderPerStep[step].indexOf(q.c);
+    feedback.textContent = isCorrect
+      ? '✅ Σωστό!'
+      : `❌ Λάθος. Σωστό: ${String.fromCharCode(65+correctShownPos)}.`;
     submitBtn.disabled = true;
     nextBtn.disabled = false;
   }
@@ -593,56 +620,17 @@ const questionBank = [
     }
   }
 
-  submitBtn?.addEventListener('click',e=>{e.preventDefault();submitCurrent();});
-  nextBtn?.addEventListener('click',e=>{e.preventDefault();nextQuestion();});
-  restart?.addEventListener('click',()=>{order=shuffled(questionBank.length);step=0;renderQuestion();});
+  submitBtn?.addEventListener('click', e=>{ e.preventDefault(); submitCurrent(); });
+  nextBtn?.addEventListener('click',   e=>{ e.preventDefault(); nextQuestion(); });
+  restart?.addEventListener('click', ()=>{
+    order = shuffled(questionBank.length);
+    step = 0;
+    optionOrderPerStep = [];   // νέα τυχαία σειρά ΚΑΙ για τις απαντήσεις
+    renderQuestion();
+  });
 
   renderQuestion();
 })();
-
-  let order = shuffled(questionBank.length);
-  let step = 0;
-  function drawProgress(){ progress.textContent = `${step+1} / ${order.length}`; }
-
-  function renderQuestion(){
-    const q = questionBank[order[step]];
-    qText.textContent = `${step+1}. ${q.q}`;
-    qForm.innerHTML = q.a.map((opt,idx)=>`<label style="display:block;margin:6px 0"><input type="radio" name="opt" value="${idx}"> ${String.fromCharCode(65+idx)}. ${opt}</label>`).join('');
-    feedback.textContent = '';
-    submitBtn.disabled = false;
-    nextBtn.disabled = true;
-    drawProgress();
-  }
-
-  function submitCurrent(){
-    const sel = qForm.querySelector('input[name="opt"]:checked');
-    if(!sel){ feedback.textContent = 'Επίλεξε μια απάντηση.'; return; }
-    const val = Number(sel.value);
-    const q = questionBank[order[step]];
-    const isCorrect = val === q.c;
-    feedback.textContent = isCorrect ? '✅ Σωστό!' : `❌ Λάθος. Σωστό: ${String.fromCharCode(65+q.c)}.`;
-    submitBtn.disabled = true;
-    nextBtn.disabled = false;
-  }
-
-  function nextQuestion(){
-    if(step < order.length-1){
-      step++;
-      renderQuestion();
-    } else {
-      qText.textContent = 'Ολοκλήρωση! Θέλεις να ξαναπαίξεις;';
-      qForm.innerHTML = '';
-      feedback.textContent = '';
-      submitBtn.disabled = true;
-      nextBtn.disabled = true;
-    }
-  }
-
-  submitBtn?.addEventListener('click',e=>{e.preventDefault();submitCurrent();});
-  nextBtn?.addEventListener('click',e=>{e.preventDefault();nextQuestion();});
-  restart?.addEventListener('click',()=>{order=shuffled(questionBank.length);step=0;renderQuestion();});
-
-  renderQuestion();
 
 
 // Τελικό: απόδοση auth περιοχής στο header

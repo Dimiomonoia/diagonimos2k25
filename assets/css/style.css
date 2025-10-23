@@ -8,8 +8,45 @@ html,body{margin:0;height:100%;background:linear-gradient(180deg, #062222, #0b1b
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
 .container{max-width:1100px;margin:0 auto;padding:24px}
-header.nav{position:sticky;top:0;backdrop-filter:saturate(180%) blur(8px);background:rgba(6,22,22,.7);border-bottom:1px solid #113;z-index:50}
-.nav-inner{display:flex;align-items:center;gap:16px;}
+/* Header (sticky + glass) */
+header.nav{
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  width: 100%;
+  background: rgba(6,22,22,.70);          /* ημιδιαφανές για το blur */
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px); /* Safari */
+  border-bottom: 1px solid #113;
+}
+
+/* Εσωτερικό container */
+.nav-inner{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;          /* brand αριστερά, links δεξιά */
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 20px;
+}
+
+/* Μενού σε μία γραμμή */
+.nav-inner ul{
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: nowrap;                        /* ΜΗν κατεβαίνουν γραμμές */
+}
+.nav-inner li{ display: inline-flex; }
+.nav-inner a{ white-space: nowrap; text-decoration: none; }
+
+/* Προαιρετικό: το brand να μην σπάει ποτέ */
+.brand{ display:flex; align-items:center; gap:8px; white-space:nowrap; }
+
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
 .brand .logo{width:36px;height:36px;border-radius:12px;background:conic-gradient(from 220deg at 50% 50%, var(--accent), var(--accent-2), var(--gold), var(--accent));box-shadow:0 0 40px #0ff4 inset}
 nav ul{display:flex;gap:10px;list-style:none;padding:0;margin:0;flex-wrap:wrap}
@@ -175,4 +212,41 @@ input[type="file"].file--compact::file-selector-button{ padding:6px 10px; }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 22px;
+}
+/* Κοντέινερ λογοτύπου */
+.brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+
+/* Το τετράγωνο με το gradient */
+.logo-box{
+  width:36px; height:36px; border-radius:10px;
+  background: linear-gradient(135deg,#b7ffcc 0%, #6ee7e0 35%, #1b7a00 100%);
+  display:grid; place-items:center;
+  box-shadow: 0 6px 18px rgba(0,0,0,.25) inset, 0 4px 14px rgba(0,0,0,.18);
+}
+
+/* Το SVG υδρόγειος */
+.logo-globe{
+  width:22px; height:22px;
+  fill:none; 
+  stroke:rgba(255,255,255,.94);
+  stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
+  transform-origin: 50% 50%;
+}
+
+/* Optional: ελαφρύ animation περιστροφής στο hover */
+.logo-box:hover .logo-globe{ animation: globe-spin 8s linear infinite; }
+@keyframes globe-spin { to { transform: rotate(360deg); } }
+
+/* Όνομα brand */
+.brand-name{
+  font-weight:800; color:#e7fff7; letter-spacing:.2px;
+}
+/* Πιο “ζωντανοί” πίνακες */
+.table tr:hover { background: rgba(167,243,208,.06); }
+
+/* Όμορφη σκιά για admin-badge */
+.badge-admin { box-shadow: 0 0 10px rgba(251,191,36,.25); }
+#authArea {
+  display: none !important;
 }
