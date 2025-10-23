@@ -73,7 +73,6 @@
         </div>
         <div class="toolbar">
           <button id="refreshBoard" class="btn">Ανανέωση</button>
-          <button id="seedDemo" class="btn secondary" title="Προσθήκη demo ονομάτων αν η λίστα είναι άδεια">Demo δεδομένα</button>
         </div>
       </div>
 
@@ -145,5 +144,79 @@
     document.querySelector('#seedDemo')?.addEventListener('click', seedDemoData);
     buildLeaderboard();
   </script>
+  <script type="module">
+  // --- Firebase imports ---
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, orderBy, limit } 
+    from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  // --- ΒΑΛΕ ΕΔΩ ΤΟ ΔΙΚΟ ΣΟΥ CONFIG ΑΠΟ ΤΟ FIREBASE ---
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "XXXXXXXXXXXX",
+    appId: "1:XXXXXXXXXXXX:web:XXXXXXXXXXXXXX"
+  };
+
+  // --- Initialize Firebase ---
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // --- Φόρτωση leaderboard ---
+  async function loadLeaderboard(){
+    const q = query(collection(db, "users"), orderBy("points","desc"), limit(20));
+    const snap = await getDocs(q);
+    const rows = [];
+    snap.forEach(d => rows.push(d.data()));
+    renderBoard(rows);
+  }
+
+  // --- Απόδοση πίνακα ---
+  function renderBoard(rows){
+    const wrap = document.querySelector('#boardWrap');
+    if(!wrap) return;
+
+    if(!rows.length){
+      wrap.innerHTML = '<div class="empty">Δεν υπάρχουν ακόμη καταχωρήσεις.</div>';
+      return;
+    }
+
+    const medal = (i)=> i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+
+    const html = `
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="rank">#</th>
+            <th>Μέλος</th>
+            <th>Πόντοι</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((r,i)=>`
+            <tr>
+              <td class="rank">${medal(i)}</td>
+              <td class="name-cell">
+                <span class="avatar">${(r.display||'?').slice(0,1).toUpperCase()}</span>
+                <span>${r.display||'Χωρίς όνομα'}${r.isAdmin ? ' <span class="badge-admin">Admin</span>' : ''}</span>
+              </td>
+              <td><strong>${r.points||0}</strong></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    wrap.innerHTML = html;
+  }
+
+  // --- Events ---
+  document.querySelector('#refreshBoard')?.addEventListener('click', loadLeaderboard);
+
+  // --- Φόρτωση κατά την είσοδο ---
+  loadLeaderboard();
+</script>
+
 </body>
 </html>
