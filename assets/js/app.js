@@ -36,7 +36,7 @@ const ADMIN_NAME = 'Olympion School';
       pass: ADMIN_PASS,
       display: ADMIN_NAME,
       volunteer: true,
-      points: 999,
+      points: 997,
       isAdmin: true
     };
     store.set(LS_USERS, users);
