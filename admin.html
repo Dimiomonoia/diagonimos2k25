@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Panel — ClimateActionNow</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    body { padding: 24px; font-family: system-ui, sans-serif; color:#def; background:#021a17; }
+    h1 { color:#a7f3d0; }
+    table { width:100%; border-collapse: collapse; margin-top:16px; }
+    th,td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.1); }
+    th { text-align:left; text-transform:uppercase; font-size:13px; color:#9ef3cf; letter-spacing:.5px; }
+    tr:hover { background:rgba(255,255,255,0.05); }
+    .btn { padding:6px 10px; border-radius:8px; border:none; cursor:pointer; }
+    .btn.small { font-size:13px; }
+    .btn.green { background:#047857; color:white; }
+    .btn.red { background:#b91c1c; color:white; }
+    .muted { color:#93c5fd; font-size:13px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; }
+    input[type="number"]{ width:60px; text-align:center; border-radius:4px; border:none; padding:4px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>🧑‍💼 Πίνακας Διαχείρισης (Admin)</h1>
+    <a href="leaderboard.html" class="btn green">↩ Επιστροφή στην Κατάταξη</a>
+  </div>
+
+  <p class="muted">Εδώ μπορείς να επεξεργαστείς πόντους, ρόλους και χρήστες.</p>
+
+  <div id="adminMsg"></div>
+  <div id="adminTableWrap">Φόρτωση δεδομένων...</div>
+
+  <script type="module">
+    import { db } from './assets/js/fb.js';
+    import { collection, getDocs, doc, updateDoc, deleteDoc } 
+      from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    async function loadUsers(){
+      const wrap = document.getElementById('adminTableWrap');
+      wrap.innerHTML = 'Φόρτωση...';
+      const snap = await getDocs(collection(db, 'users'));
+      const rows = [];
+      snap.forEach(docSnap => rows.push({ id: docSnap.id, ...docSnap.data() }));
+
+      rows.sort((a,b)=> b.points - a.points);
+
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr><th>Όνομα</th><th>Πόντοι</th><th>Volunteer</th><th>Admin</th><th>Ενέργειες</th></tr>
+          </thead>
+          <tbody>
+          ${rows.map(u=>`
+            <tr>
+              <td>${u.display || u.id}</td>
+              <td>
+                <input type="number" id="pts-${u.id}" value="${u.points||0}"/>
+              </td>
+              <td><input type="checkbox" id="vol-${u.id}" ${u.volunteer?'checked':''}></td>
+              <td><input type="checkbox" id="adm-${u.id}" ${u.isAdmin?'checked':''}></td>
+              <td>
+                <button class="btn small green" onclick="saveUser('${u.id}')">💾</button>
+                <button class="btn small red" onclick="delUser('${u.id}')">🗑</button>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    window.saveUser = async function(uid){
+      const pts = Number(document.getElementById(`pts-${uid}`).value);
+      const vol = document.getElementById(`vol-${uid}`).checked;
+      const adm = document.getElementById(`adm-${uid}`).checked;
+      try{
+        await updateDoc(doc(db, 'users', uid), { points: pts, volunteer: vol, isAdmin: adm });
+        alert('✅ Αποθηκεύτηκε!');
+      }catch(e){ alert('Σφάλμα: '+e.message); }
+    }
+
+    window.delUser = async function(uid){
+      if(!confirm('Διαγραφή χρήστη;')) return;
+      await deleteDoc(doc(db, 'users', uid));
+      alert('🗑 Διαγράφηκε!');
+      loadUsers();
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>
